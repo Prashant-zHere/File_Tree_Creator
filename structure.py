@@ -1,16 +1,20 @@
 import os
 import re
 
-def create_structure_from_txt(txt_path, base_dir="."):
+def create_structure_from_txt(txt_path, base_dir = "."):
     with open(txt_path, "r", encoding="utf-8") as f:
-        lines = f.readlines()
+        lines = [line.rstrip() for line in f if line.strip()]
 
-    path_stack = [base_dir]
+    path_stack = []
+    root_created = False
 
     for line in lines:
-        line = line.rstrip()
-
-        if not line.strip():
+        if not root_created:
+            root_name = line.rstrip("/")
+            root_path = os.path.join(base_dir, root_name)
+            os.makedirs(root_path, exist_ok = True)
+            path_stack = [root_path]
+            root_created = True
             continue
 
         level = line.count("│   ")
@@ -25,6 +29,7 @@ def create_structure_from_txt(txt_path, base_dir="."):
             folder_path = current_path.rstrip("/")
             os.makedirs(folder_path, exist_ok=True)
             path_stack.append(folder_path)
+
         else:
             if "." in name:
                 os.makedirs(os.path.dirname(current_path), exist_ok=True)
@@ -33,7 +38,7 @@ def create_structure_from_txt(txt_path, base_dir="."):
                 os.makedirs(current_path, exist_ok=True)
                 path_stack.append(current_path)
 
-    print("✅ Structure created successfully!")
+    print("✅ Root directory and structure created successfully!")
 
 if __name__ == "__main__":
     create_structure_from_txt("structure.txt")
