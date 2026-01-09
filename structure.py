@@ -1,0 +1,39 @@
+import os
+import re
+
+def create_structure_from_txt(txt_path, base_dir="."):
+    with open(txt_path, "r", encoding="utf-8") as f:
+        lines = f.readlines()
+
+    path_stack = [base_dir]
+
+    for line in lines:
+        line = line.rstrip()
+
+        if not line.strip():
+            continue
+
+        level = line.count("│   ")
+
+        name = re.sub(r"[│├└─ ]+", "", line)
+
+        path_stack = path_stack[:level + 1]
+
+        current_path = os.path.join(path_stack[-1], name)
+
+        if name.endswith("/"):
+            folder_path = current_path.rstrip("/")
+            os.makedirs(folder_path, exist_ok=True)
+            path_stack.append(folder_path)
+        else:
+            if "." in name:
+                os.makedirs(os.path.dirname(current_path), exist_ok=True)
+                open(current_path, "w").close()
+            else:
+                os.makedirs(current_path, exist_ok=True)
+                path_stack.append(current_path)
+
+    print("✅ Structure created successfully!")
+
+if __name__ == "__main__":
+    create_structure_from_txt("structure.txt")
